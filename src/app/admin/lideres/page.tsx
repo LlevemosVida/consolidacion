@@ -49,7 +49,7 @@ export default async function AdminLideresPage() {
           <div>
             <Link
               href="/admin/dashboard"
-              className="inline-flex items-center gap-1 text-xs font-semibold text-[#006C69] hover:text-[#005250] mb-1 transition"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-[#0eb6f4] hover:text-[#0a9ed6] mb-1 transition"
             >
               &larr; Volver al Panel
             </Link>
@@ -76,7 +76,7 @@ export default async function AdminLideresPage() {
               Selecciona un líder para supervisar el avance de sus consolidados
             </p>
           </div>
-          <span className="bg-[#006C69]/10 text-[#006C69] font-bold text-xs px-3 py-1.5 rounded-full border border-[#006C69]/20">
+          <span className="bg-[#0eb6f4]/10 text-[#0eb6f4] font-bold text-xs px-3 py-1.5 rounded-full border border-[#0eb6f4]/20">
             Total Líderes: {lideres?.length || 0}
           </span>
         </div>
@@ -101,7 +101,7 @@ export default async function AdminLideresPage() {
                       <h3 className="font-bold text-gray-800 text-base leading-snug">
                         {lider.nombre_completo}
                       </h3>
-                      <span className="text-[10px] bg-[#006C69]/10 text-[#006C69] font-bold px-2 py-0.5 rounded-full uppercase">
+                      <span className="text-[10px] bg-[#0eb6f4]/10 text-[#0eb6f4] font-bold px-2 py-0.5 rounded-full uppercase">
                         Líder
                       </span>
                     </div>
@@ -112,7 +112,7 @@ export default async function AdminLideresPage() {
 
                     <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 mb-4 flex justify-between items-center text-xs">
                       <span className="text-gray-500 font-medium">Consolidados asignados:</span>
-                      <span className="font-bold text-[#006C69] bg-white px-2.5 py-0.5 rounded-md border border-gray-200 shadow-sm">
+                      <span className="font-bold text-[#0eb6f4] bg-white px-2.5 py-0.5 rounded-md border border-gray-200 shadow-sm">
                         {totalConsolidados}
                       </span>
                     </div>
@@ -120,7 +120,7 @@ export default async function AdminLideresPage() {
 
                   <Link
                     href={`/admin/lideres/${lider.id}`}
-                    className="block text-center w-full bg-[#006C69] text-white text-xs font-semibold py-2.5 rounded-xl hover:bg-[#005250] transition shadow-sm"
+                    className="block text-center w-full bg-[#0eb6f4] text-white text-xs font-semibold py-2.5 rounded-xl hover:bg-[#0a9ed6] transition shadow-sm"
                   >
                     Ver Personas Asignadas &rarr;
                   </Link>

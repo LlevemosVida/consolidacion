@@ -67,7 +67,7 @@ export default function LoginPage() {
 
   return (
     // Fondo esmeralda plano corporativo
-    <div className="min-h-screen flex items-center justify-center bg-[#006C69] p-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#0eb6f4] p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 space-y-6">
         
         {/* Logo e Identidad */}
@@ -77,12 +77,13 @@ export default function LoginPage() {
               src="/images/Logo-Negro.png"
               alt="Centro Cristiano Casa del Rey Popayán"
               fill
+              sizes="200px"
               priority
               className="object-contain"
             />
           </div>
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mt-2 text-center">
-            Centro Cristiano Casa Del Rey Popayán
+            Iglesia Cristiana LLevando Vida
           </p>
         </div>
 
@@ -126,7 +127,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#006C69] hover:bg-[#005452] active:bg-[#003D3B] text-white py-3 rounded-lg font-semibold shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-[#0eb6f4] hover:bg-[#096789] active:bg-[#003D3B] text-white py-3 rounded-lg font-semibold shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Ingresando...' : 'Iniciar Sesión'}
           </button>
@@ -138,7 +139,7 @@ export default function LoginPage() {
             ¿Eres líder y tienes un código de acceso?{' '}
             <Link 
               href="/registro-lider" 
-              className="text-[#006C69] font-bold hover:underline"
+              className="text-[#0eb6f4] font-bold hover:underline"
             >
               Regístrate aquí
             </Link>

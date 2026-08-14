@@ -49,7 +49,7 @@ export default async function AdminDashboardPage() {
           />
           <div className="min-w-0 flex-1">
             <h1 className="font-bold text-gray-800 text-base sm:text-lg leading-tight truncate">
-              Centro Cristiano Casa del Rey <span className="text-[#006C69] font-normal block sm:inline">Popayán</span>
+              Centro Cristiano Casa del Rey <span className="text-[#0eb6f4] font-normal block sm:inline">Popayán</span>
             </h1>
             <p className="text-xs text-gray-500 mt-0.5 truncate">
               Bienvenido, <span className="font-semibold text-gray-700">{admin.nombre_completo}</span> ({admin.rol_sistema})
@@ -63,7 +63,7 @@ export default async function AdminDashboardPage() {
 
           <Link 
             href="/cambiar-password" 
-            className="text-xs font-semibold text-[#006C69] hover:text-[#005250] hover:underline transition px-2 py-1 rounded-md bg-gray-50 sm:bg-transparent"
+            className="text-xs font-semibold text-[#0eb6f4] hover:text-[#0a9ed6] hover:underline transition px-2 py-1 rounded-md bg-gray-50 sm:bg-transparent"
           >
             Cambiar Clave
           </Link>
@@ -82,11 +82,11 @@ export default async function AdminDashboardPage() {
               <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">
                 Líderes de Consolidación
               </p>
-              <p className="text-3xl sm:text-4xl font-extrabold text-[#006C69] mt-1.5 sm:mt-2">
+              <p className="text-3xl sm:text-4xl font-extrabold text-[#0eb6f4] mt-1.5 sm:mt-2">
                 {totalLideres || 0}
               </p>
             </div>
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#006C69]/10 text-[#006C69] flex items-center justify-center text-xl sm:text-2xl shrink-0">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#0eb6f4]/10 text-[#0eb6f4] flex items-center justify-center text-xl sm:text-2xl shrink-0">
               👥
             </div>
           </div>
@@ -121,17 +121,17 @@ export default async function AdminDashboardPage() {
               className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all flex flex-col justify-between group"
             >
               <div>
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#006C69]/10 text-[#006C69] flex items-center justify-center font-bold mb-3 sm:mb-4 group-hover:bg-[#006C69] group-hover:text-white transition-colors duration-200 text-lg sm:text-xl">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#0eb6f4]/10 text-[#0eb6f4] flex items-center justify-center font-bold mb-3 sm:mb-4 group-hover:bg-[#0eb6f4] group-hover:text-white transition-colors duration-200 text-lg sm:text-xl">
                   📋
                 </div>
-                <h3 className="font-bold text-gray-800 text-base mb-1.5 sm:mb-2 group-hover:text-[#006C69] transition-colors">
+                <h3 className="font-bold text-gray-800 text-base mb-1.5 sm:mb-2 group-hover:text-[#0eb6f4] transition-colors">
                   Gestión de Integrantes
                 </h3>
                 <p className="text-xs text-gray-500 leading-relaxed">
                   Crear líderes, registrar nuevos creyentes, asignar acompañantes y resetear contraseñas.
                 </p>
               </div>
-              <span className="text-xs text-[#006C69] font-semibold mt-4 sm:mt-6 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+              <span className="text-xs text-[#0eb6f4] font-semibold mt-4 sm:mt-6 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
                 Ingresar al módulo &rarr;
               </span>
             </Link>

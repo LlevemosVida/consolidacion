@@ -51,7 +51,7 @@ export default function CambiarPasswordPage() {
         
         {/* Cabecera / Identificador visual */}
         <div className="text-center">
-          <div className="w-12 h-12 bg-[#006C69]/10 text-[#006C69] rounded-2xl flex items-center justify-center text-xl font-bold mx-auto mb-3">
+          <div className="w-12 h-12 bg-[#006C69]/10 text-[#0eb6f4] rounded-2xl flex items-center justify-center text-xl font-bold mx-auto mb-3">
             🔐
           </div>
           <h2 className="text-2xl font-bold text-gray-800">Cambiar Contraseña</h2>
@@ -84,7 +84,7 @@ export default function CambiarPasswordPage() {
               required
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm text-gray-800 focus:ring-2 focus:ring-[#006C69] focus:border-transparent outline-none transition"
+              className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm text-gray-800 focus:ring-2 focus:ring-[#0eb6f4] focus:border-transparent outline-none transition"
               placeholder="Mínimo 6 caracteres"
             />
           </div>
@@ -116,7 +116,7 @@ export default function CambiarPasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="bg-[#006C69] text-white px-5 py-2.5 rounded-xl font-medium hover:bg-[#005250] transition-all shadow-sm text-xs disabled:opacity-50"
+              className="bg-[#0eb6f4] text-white px-5 py-2.5 rounded-xl font-medium hover:bg-[#076b90] transition-all shadow-sm text-xs disabled:opacity-50"
             >
               {loading ? 'Actualizando...' : 'Guardar Cambio'}
             </button>

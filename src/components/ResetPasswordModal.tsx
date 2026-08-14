@@ -78,7 +78,7 @@ export default function ResetPasswordModal({
               required
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="mt-1 w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+              className="mt-1 w-full p-2 border rounded-md focus:ring-1 focus:ring-[#0eb6f4] outline-none text-sm"
               placeholder="Ingresa la nueva clave"
             />
           </div>
@@ -87,14 +87,14 @@ export default function ResetPasswordModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border rounded-md text-sm text-gray-600 hover:bg-gray-50"
+              className="px-4 py-2 border rounded-md text-sm text-gray-600 hover:bg-gray-50 transition"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+              className="px-4 py-2 bg-[#0eb6f4] hover:bg-[#0a9ed6] text-white rounded-md text-sm font-medium transition shadow-sm disabled:opacity-50"
             >
               {loading ? 'Guardando...' : 'Cambiar Clave'}
             </button>

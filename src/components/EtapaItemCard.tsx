@@ -99,12 +99,12 @@ export default function EtapaItemCard({
   return (
     <div
       className={`border rounded-xl p-5 bg-white shadow-sm transition ${
-        completado ? 'border-green-300 bg-green-50/30' : 'border-gray-200'
+        completado ? 'border-[#0eb6f4]/40 bg-[#0eb6f4]/5' : 'border-gray-200'
       }`}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3">
-          <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-800 font-bold flex items-center justify-center text-sm">
+          <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#0eb6f4]/15 text-[#0883b2] font-bold flex items-center justify-center text-sm">
             📖
           </span>
           <div>
@@ -113,10 +113,10 @@ export default function EtapaItemCard({
               <p className="text-xs text-gray-500 mt-0.5">{etapa.descripcion}</p>
             )}
 
-            {/* 🎯 SECCIÓN DE FECHA DE INICIO / BOTÓN COMANZAR */}
+            {/* 🎯 SECCIÓN DE FECHA DE INICIO / BOTÓN COMENZAR */}
             <div className="mt-2 flex items-center gap-2">
               {fechaInicio ? (
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#006C69] bg-[#006C69]/10 px-2 py-0.5 rounded-md">
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0883b2] bg-[#0eb6f4]/15 px-2 py-0.5 rounded-md">
                   🚀 Iniciado el: {formatearFecha(fechaInicio)}
                 </span>
               ) : (
@@ -124,7 +124,7 @@ export default function EtapaItemCard({
                   type="button"
                   onClick={handleComenzarEtapa}
                   disabled={starting}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-white bg-[#006C69] hover:bg-[#005250] active:scale-95 transition px-3 py-1 rounded-lg shadow-sm disabled:opacity-50"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-white bg-[#0eb6f4] hover:bg-[#0a9ed6] active:scale-95 transition px-3 py-1 rounded-lg shadow-sm disabled:opacity-50"
                 >
                   {starting ? 'Iniciando...' : '▶ Comenzar esta etapa'}
                 </button>
@@ -151,7 +151,7 @@ export default function EtapaItemCard({
               setSubpasos(nuevasLecciones)
               handleGuardar(checked, nuevasLecciones)
             }}
-            className="w-4 h-4 text-[#006C69] rounded focus:ring-[#006C69]"
+            className="w-4 h-4 text-[#0eb6f4] rounded focus:ring-[#0eb6f4]"
           />
           {completado ? 'Cartilla Finalizada' : 'Marcar Finalizada'}
         </label>
@@ -190,14 +190,14 @@ export default function EtapaItemCard({
           onChange={(e) => setNotas(e.target.value)}
           onBlur={() => handleGuardar()}
           placeholder="Añade observaciones (ej: 'Realizada lección 2 en su casa, muy receptivo')"
-          className="w-full p-2 border rounded-md text-xs outline-none focus:ring-1 focus:ring-[#006C69] bg-gray-50/50 text-gray-800"
+          className="w-full p-2 border rounded-md text-xs outline-none focus:ring-1 focus:ring-[#0eb6f4] bg-gray-50/50 text-gray-800"
         />
       </div>
 
       {/* Indicadores de guardado */}
       <div className="mt-1 flex justify-end">
         {saving && <span className="text-xs text-gray-400">Guardando...</span>}
-        {savedMsg && <span className="text-xs text-green-600 font-medium">✓ Guardado</span>}
+        {savedMsg && <span className="text-xs text-[#0a9ed6] font-medium">✓ Guardado</span>}
       </div>
     </div>
   )

@@ -87,7 +87,7 @@ export default function RegistroLiderForm({ iglesias }: { iglesias: Iglesia[] })
               onChange={(e) =>
                 setFormData({ ...formData, codigoRegistro: e.target.value.toUpperCase() })
               }
-              className="w-full text-sm font-bold tracking-widest uppercase p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#006C69] bg-emerald-50/30 text-[#006C69] border-emerald-200 placeholder:font-normal placeholder:tracking-normal"
+              className="w-full text-sm font-bold tracking-widest uppercase p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#0eb6f4] bg-[#0eb6f4]/10 text-[#0883b2] border-[#0eb6f4]/30 placeholder:font-normal placeholder:tracking-normal"
             />
           </div>
 
@@ -100,7 +100,7 @@ export default function RegistroLiderForm({ iglesias }: { iglesias: Iglesia[] })
               required
               value={formData.iglesiaId}
               onChange={(e) => setFormData({ ...formData, iglesiaId: e.target.value })}
-              className="w-full text-xs p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#006C69] bg-white"
+              className="w-full text-xs p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#0eb6f4] bg-white"
             >
               <option value="" disabled>
                 Selecciona tu iglesia...
@@ -123,7 +123,7 @@ export default function RegistroLiderForm({ iglesias }: { iglesias: Iglesia[] })
               placeholder="Tu nombre completo"
               value={formData.nombreCompleto}
               onChange={(e) => setFormData({ ...formData, nombreCompleto: e.target.value })}
-              className="w-full text-xs p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#006C69]"
+              className="w-full text-xs p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#0eb6f4]"
             />
           </div>
 
@@ -138,7 +138,7 @@ export default function RegistroLiderForm({ iglesias }: { iglesias: Iglesia[] })
                 placeholder="Ej: 3001234567"
                 value={formData.telefono}
                 onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
-                className="w-full text-xs p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#006C69]"
+                className="w-full text-xs p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#0eb6f4]"
               />
             </div>
 
@@ -151,7 +151,7 @@ export default function RegistroLiderForm({ iglesias }: { iglesias: Iglesia[] })
                 placeholder="Calle / Carrera / Barrio"
                 value={formData.direccion}
                 onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
-                className="w-full text-xs p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#006C69]"
+                className="w-full text-xs p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#0eb6f4]"
               />
             </div>
           </div>
@@ -166,7 +166,7 @@ export default function RegistroLiderForm({ iglesias }: { iglesias: Iglesia[] })
               placeholder="lider@correo.com"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full text-xs p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#006C69]"
+              className="w-full text-xs p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#0eb6f4]"
             />
           </div>
 
@@ -181,14 +181,14 @@ export default function RegistroLiderForm({ iglesias }: { iglesias: Iglesia[] })
               placeholder="Mínimo 6 caracteres"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full text-xs p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#006C69]"
+              className="w-full text-xs p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#0eb6f4]"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#006C69] hover:bg-[#005250] text-white text-xs font-bold py-3 rounded-xl transition shadow-sm disabled:opacity-50 pt-3"
+            className="w-full bg-[#0eb6f4] hover:bg-[#0a9ed6] text-white text-xs font-bold py-3 rounded-xl transition shadow-sm disabled:opacity-50 pt-3"
           >
             {loading ? 'Verificando y Creando Cuenta...' : 'Completar Registro'}
           </button>
@@ -196,7 +196,7 @@ export default function RegistroLiderForm({ iglesias }: { iglesias: Iglesia[] })
 
         <div className="text-center pt-2">
           <Link href="/login" className="text-xs text-gray-500 hover:text-gray-800">
-            ¿Ya tienes cuenta? <span className="text-[#006C69] font-bold">Inicia Sesión</span>
+            ¿Ya tienes cuenta? <span className="text-[#0eb6f4] font-bold">Inicia Sesión</span>
           </Link>
         </div>
       </div>

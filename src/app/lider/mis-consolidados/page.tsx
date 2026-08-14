@@ -70,7 +70,7 @@ export default async function MisConsolidadosPage() {
               />
               <div>
                 <h1 className="font-bold text-gray-800 text-base leading-tight">
-                  Vida Abundante <span className="text-[#006C69] font-normal">— Líder</span>
+                  Vida Abundante <span className="text-[#0eb6f4] font-normal">— Líder</span>
                 </h1>
                 <p className="text-xs text-gray-500">Líder: {lider.nombre_completo}</p>
               </div>
@@ -80,7 +80,7 @@ export default async function MisConsolidadosPage() {
           <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto pt-2 sm:pt-0 border-t border-gray-100 sm:border-t-0">
             <Link
               href="/cambiar-password"
-              className="text-xs font-semibold text-[#006C69] hover:text-[#005250] hover:underline transition px-2 py-1 rounded-md bg-gray-50 sm:bg-transparent"
+              className="text-xs font-semibold text-[#0eb6f4] hover:text-[#0a79a2] hover:underline transition px-2 py-1 rounded-md bg-gray-50 sm:bg-transparent"
             >
               Cambiar Clave
             </Link>
@@ -101,7 +101,7 @@ export default async function MisConsolidadosPage() {
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-            <span className="bg-[#006C69]/10 text-[#006C69] font-bold text-xs px-3 py-2 rounded-xl border border-[#006C69]/20 shrink-0">
+            <span className="bg-[#006C69]/10 text-[#0eb6f4] font-bold text-xs px-3 py-2 rounded-xl border border-[#006C69]/20 shrink-0">
               Total: {misNuevos?.length || 0}
             </span>
 
@@ -155,13 +155,13 @@ export default async function MisConsolidadosPage() {
                     <div className="space-y-1.5">
                       <div className="flex justify-between text-xs font-semibold text-gray-600">
                         <span>Cartilla Inicial</span>
-                        <span className="text-[#006C69]">
+                        <span className="text-[#0eb6f4]">
                           {subpasos} / 5 Lecciones ({porcentaje}%)
                         </span>
                       </div>
                       <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden p-0.5 border border-gray-100">
                         <div
-                          className="bg-[#006C69] h-full rounded-full transition-all duration-500 ease-out"
+                          className="bg-[#0eb6f4] h-full rounded-full transition-all duration-500 ease-out"
                           style={{ width: `${porcentaje}%` }}
                         />
                       </div>
@@ -170,7 +170,7 @@ export default async function MisConsolidadosPage() {
 
                   <Link
                     href={`/lider/seguimiento/${nuevo.id}`}
-                    className="block text-center w-full bg-[#006C69] text-white text-xs font-semibold py-2.5 rounded-xl hover:bg-[#005250] transition shadow-sm"
+                    className="block text-center w-full bg-[#0eb6f4] text-white text-xs font-semibold py-2.5 rounded-xl hover:bg-[#0779a3] transition shadow-sm"
                   >
                     Ver y Actualizar Plan
                   </Link>

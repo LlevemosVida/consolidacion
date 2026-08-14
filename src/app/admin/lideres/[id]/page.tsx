@@ -60,7 +60,7 @@ export default async function DetalleLiderPage({
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <Link
             href="/admin/lideres"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#006C69] hover:text-[#005250] transition"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0eb6f4] hover:text-[#0a9ed6] transition"
           >
             &larr; Volver a Líderes
           </Link>
@@ -79,7 +79,7 @@ export default async function DetalleLiderPage({
         {/* Header del Líder */}
         <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <span className="text-[10px] uppercase font-bold tracking-wider text-[#006C69] bg-[#006C69]/10 px-2.5 py-1 rounded-full">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-[#0eb6f4] bg-[#0eb6f4]/10 px-2.5 py-1 rounded-full">
               Líder Encargado
             </span>
             <h1 className="text-2xl font-bold text-gray-800 pt-1">{lider.nombre_completo}</h1>
@@ -90,7 +90,7 @@ export default async function DetalleLiderPage({
 
           <div className="bg-gray-50 border border-gray-100 p-3.5 rounded-xl text-right">
             <span className="text-xs text-gray-500 block">Total en Consolidación</span>
-            <span className="text-xl font-bold text-[#006C69]">
+            <span className="text-xl font-bold text-[#0eb6f4]">
               {listaConProgreso?.length || 0} Personas
             </span>
           </div>
@@ -132,13 +132,13 @@ export default async function DetalleLiderPage({
                     <div className="mb-5 space-y-1.5">
                       <div className="flex justify-between text-xs font-semibold text-gray-600">
                         <span>Avance del Plan</span>
-                        <span className="text-[#006C69]">
+                        <span className="text-[#0eb6f4]">
                           {etapasCompletadas} / 8 ({porcentaje}%)
                         </span>
                       </div>
                       <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden p-0.5 border border-gray-100">
                         <div
-                          className="bg-[#006C69] h-full rounded-full transition-all duration-500"
+                          className="bg-[#0eb6f4] h-full rounded-full transition-all duration-500"
                           style={{ width: `${porcentaje}%` }}
                         />
                       </div>
@@ -148,7 +148,7 @@ export default async function DetalleLiderPage({
                   {/* El Super Admin puede ingresar a supervisar directamente */}
                   <Link
                     href={`/admin/lideres/${lider.id}/seguimiento/${persona.id}`}
-                    className="block text-center w-full bg-[#006C69] text-white text-xs font-semibold py-2.5 rounded-xl hover:bg-[#005250] transition shadow-sm"
+                    className="block text-center w-full bg-[#0eb6f4] text-white text-xs font-semibold py-2.5 rounded-xl hover:bg-[#0a9ed6] transition shadow-sm"
                   >
                     Supervisar Etapas &rarr;
                   </Link>

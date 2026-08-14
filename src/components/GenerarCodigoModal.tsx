@@ -87,7 +87,7 @@ export default function GenerarCodigoModal() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="bg-[#006C69] hover:bg-[#005250] text-white text-xs font-bold px-3 py-2 rounded-xl transition shadow-sm flex items-center gap-1.5"
+        className="bg-[#0eb6f4] hover:bg-[#0a9ed6] text-white text-xs font-bold px-3 py-2 rounded-xl transition shadow-sm flex items-center gap-1.5"
       >
         <span>🔑</span> Código de Registro
       </button>
@@ -124,7 +124,7 @@ export default function GenerarCodigoModal() {
                   <select
                     value={horas}
                     onChange={(e) => setHoras(Number(e.target.value))}
-                    className="w-full text-xs p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#006C69]"
+                    className="w-full text-xs p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#0eb6f4]"
                   >
                     <option value={2}>2 horas</option>
                     <option value={6}>6 horas (Recomendado)</option>
@@ -136,7 +136,7 @@ export default function GenerarCodigoModal() {
                 <button
                   onClick={handleGenerar}
                   disabled={loading}
-                  className="w-full bg-[#006C69] hover:bg-[#005250] text-white text-xs font-bold py-2.5 rounded-xl transition shadow-sm disabled:opacity-50"
+                  className="w-full bg-[#0eb6f4] hover:bg-[#0a9ed6] text-white text-xs font-bold py-2.5 rounded-xl transition shadow-sm disabled:opacity-50"
                 >
                   Generar Código Ahora
                 </button>
@@ -147,8 +147,8 @@ export default function GenerarCodigoModal() {
                   Código activo para tu iglesia:
                 </span>
 
-                <div className="bg-emerald-50/50 border-2 border-dashed border-[#006C69]/40 rounded-xl p-3">
-                  <span className="text-2xl font-black text-[#006C69] tracking-wider block">
+                <div className="bg-[#0eb6f4]/10 border-2 border-dashed border-[#0eb6f4]/40 rounded-xl p-3">
+                  <span className="text-2xl font-black text-[#0883b2] tracking-wider block">
                     {codigoGenerado.codigo}
                   </span>
                 </div>

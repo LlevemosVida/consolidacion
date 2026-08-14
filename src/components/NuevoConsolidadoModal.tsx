@@ -40,7 +40,7 @@ export default function NuevoConsolidadoModal() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="bg-[#006C69] hover:bg-[#005250] text-white text-xs font-bold px-3 py-2 rounded-xl transition shadow-sm flex items-center gap-1.5"
+        className="bg-[#0eb6f4] hover:bg-[#0a9ed6] text-white text-xs font-bold px-3 py-2 rounded-xl transition shadow-sm flex items-center gap-1.5"
       >
         <span>➕</span> Registrar Nuevo Consolidado
       </button>
@@ -79,7 +79,7 @@ export default function NuevoConsolidadoModal() {
                   onChange={(e) =>
                     setFormData({ ...formData, nombreCompleto: e.target.value })
                   }
-                  className="w-full text-xs p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#006C69]"
+                  className="w-full text-xs p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#0eb6f4]"
                 />
               </div>
 
@@ -95,7 +95,7 @@ export default function NuevoConsolidadoModal() {
                     onChange={(e) =>
                       setFormData({ ...formData, telefono: e.target.value })
                     }
-                    className="w-full text-xs p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#006C69]"
+                    className="w-full text-xs p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#0eb6f4]"
                   />
                 </div>
 
@@ -109,7 +109,7 @@ export default function NuevoConsolidadoModal() {
                     onChange={(e) =>
                       setFormData({ ...formData, fechaIngreso: e.target.value })
                     }
-                    className="w-full text-xs p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#006C69]"
+                    className="w-full text-xs p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#0eb6f4]"
                   />
                 </div>
               </div>
@@ -125,7 +125,7 @@ export default function NuevoConsolidadoModal() {
                   onChange={(e) =>
                     setFormData({ ...formData, direccion: e.target.value })
                   }
-                  className="w-full text-xs p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#006C69]"
+                  className="w-full text-xs p-2.5 border rounded-xl outline-none focus:ring-1 focus:ring-[#0eb6f4]"
                 />
               </div>
 
@@ -140,7 +140,7 @@ export default function NuevoConsolidadoModal() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-[#006C69] hover:bg-[#005250] text-white text-xs font-bold py-2.5 rounded-xl transition shadow-sm disabled:opacity-50"
+                  className="flex-1 bg-[#0eb6f4] hover:bg-[#0a9ed6] text-white text-xs font-bold py-2.5 rounded-xl transition shadow-sm disabled:opacity-50"
                 >
                   {loading ? 'Guardando...' : 'Guardar'}
                 </button>
