@@ -49,7 +49,7 @@ export default async function AdminDashboardPage() {
           />
           <div className="min-w-0 flex-1">
             <h1 className="font-bold text-gray-800 text-base sm:text-lg leading-tight truncate">
-              Centro Cristiano Casa del Rey <span className="text-[#0eb6f4] font-normal block sm:inline">Popayán</span>
+              Llevando Vida <span className="text-[#0eb6f4] font-normal block sm:inline">Popayán</span>
             </h1>
             <p className="text-xs text-gray-500 mt-0.5 truncate">
               Bienvenido, <span className="font-semibold text-gray-700">{admin.nombre_completo}</span> ({admin.rol_sistema})
