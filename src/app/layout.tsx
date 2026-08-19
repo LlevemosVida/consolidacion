@@ -22,13 +22,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Centro Cristiano Casa del Rey Popayán",
+  title: "Iglesia Cristiana llevando Vida",
   description: "Sistema de gestión e información institucional",
   manifest: "/manifest.webmanifest", // 🎯 Conecta el archivo de configuración PWA
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Casa del Rey",
+    title: "Llevando Vida",
   },
   icons: {
     icon: "/Logo-Verde-sin-texto.png",
