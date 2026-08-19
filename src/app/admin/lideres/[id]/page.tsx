@@ -25,10 +25,10 @@ export default async function DetalleLiderPage({
 
   if (!lider) redirect('/admin/lideres')
 
-  // 2. Obtener los consolidados de este líder
+  // 2. Obtener los consolidados de este líder (agregado tipo_persona)
   const { data: consolidados } = await supabase
     .from('personas')
-    .select('id, nombre_completo, telefono, estado_consolidacion, fecha_ingreso')
+    .select('id, nombre_completo, telefono, estado_consolidacion, fecha_ingreso, tipo_persona')
     .eq('lider_asignado_id', lider.id)
     .order('fecha_ingreso', { ascending: false })
 
@@ -53,6 +53,37 @@ export default async function DetalleLiderPage({
     ...c,
     etapasCompletadas: seguimientosMap[c.id] || 0,
   }))
+
+  const obtenerBadgeTipo = (tipo?: string) => {
+    switch (tipo) {
+      case 'nuevo':
+        return (
+          <span className="text-[10px] bg-sky-100 text-[#0284c7] font-semibold px-2 py-0.5 rounded-full border border-sky-200 uppercase">
+            Nuevo
+          </span>
+        )
+      case 'miembro':
+        return (
+          <span className="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full border border-emerald-200 uppercase">
+            Miembro
+          </span>
+        )
+      case 'lider':
+        return (
+          <span className="text-[10px] bg-purple-100 text-purple-800 font-semibold px-2 py-0.5 rounded-full border border-purple-200 uppercase">
+            Líder
+          </span>
+        )
+      case 'pastor':
+        return (
+          <span className="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full border border-amber-200 uppercase">
+            Pastor
+          </span>
+        )
+      default:
+        return null
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50/50 pb-12">
@@ -119,9 +150,12 @@ export default async function DetalleLiderPage({
                       <h3 className="font-bold text-gray-800 text-base leading-snug">
                         {persona.nombre_completo}
                       </h3>
-                      <span className="text-[10px] bg-emerald-50 text-emerald-700 font-semibold px-2 py-0.5 rounded-full border border-emerald-200 uppercase">
-                        {persona.estado_consolidacion || 'activo'}
-                      </span>
+                      <div className="flex flex-wrap items-center gap-1 justify-end">
+                        {obtenerBadgeTipo(persona.tipo_persona)}
+                        <span className="text-[10px] bg-slate-100 text-slate-700 font-semibold px-2 py-0.5 rounded-full border border-slate-200 uppercase">
+                          {persona.estado_consolidacion || 'activo'}
+                        </span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-gray-500 mb-4">
@@ -131,7 +165,7 @@ export default async function DetalleLiderPage({
                     {/* Barra de Progreso */}
                     <div className="mb-5 space-y-1.5">
                       <div className="flex justify-between text-xs font-semibold text-gray-600">
-                        <span>Avance del Plan</span>
+                        <span>Ruta de Crecimiento</span>
                         <span className="text-[#0eb6f4]">
                           {etapasCompletadas} / 8 ({porcentaje}%)
                         </span>
@@ -145,7 +179,7 @@ export default async function DetalleLiderPage({
                     </div>
                   </div>
 
-                  {/* El Super Admin puede ingresar a supervisar directamente */}
+                  {/* Supervisión directa */}
                   <Link
                     href={`/admin/lideres/${lider.id}/seguimiento/${persona.id}`}
                     className="block text-center w-full bg-[#0eb6f4] text-white text-xs font-semibold py-2.5 rounded-xl hover:bg-[#0a9ed6] transition shadow-sm"

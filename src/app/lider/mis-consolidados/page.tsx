@@ -62,7 +62,7 @@ export default async function MisConsolidadosPage() {
             <div className="flex items-center gap-2.5">
               <Image
                 src="/images/Logo-Negro.png"
-                alt="Logo Vida Abundante"
+                alt="Llevando vida"
                 width={32}
                 height={32}
                 className="object-contain shrink-0"
@@ -70,7 +70,7 @@ export default async function MisConsolidadosPage() {
               />
               <div>
                 <h1 className="font-bold text-gray-800 text-base leading-tight">
-                  Vida Abundante <span className="text-[#0eb6f4] font-normal">— Líder</span>
+                  Ruta de Crecimiento <span className="text-[#0eb6f4] font-normal">— Líder</span>
                 </h1>
                 <p className="text-xs text-gray-500">Líder: {lider.nombre_completo}</p>
               </div>
@@ -154,7 +154,7 @@ export default async function MisConsolidadosPage() {
                     {/* Barra de Progreso adaptada a 5 lecciones */}
                     <div className="space-y-1.5">
                       <div className="flex justify-between text-xs font-semibold text-gray-600">
-                        <span>Cartilla Inicial</span>
+                        <span>Ruta de Crecimiento</span>
                         <span className="text-[#0eb6f4]">
                           {subpasos} / 5 Lecciones ({porcentaje}%)
                         </span>

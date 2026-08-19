@@ -17,7 +17,7 @@ export default async function SeguimientoPersonaPage({
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // 1. Cargar datos del Nuevo
+  // 1. Cargar datos de la Persona
   const { data: persona } = await supabase
     .from('personas')
     .select('id, nombre_completo, telefono, direccion, fecha_ingreso')
@@ -26,57 +26,32 @@ export default async function SeguimientoPersonaPage({
 
   if (!persona) redirect('/lider/mis-consolidados')
 
-  // 2. Cargar el seguimiento enfocado en "Cartilla Conociendo a Jesús"
+  // 2. Cargar TODAS las etapas definidas en el plan master
+  const { data: todasLasEtapas, error: errorEtapas } = await supabase
+    .from('etapas_plan')
+    .select('id, orden, nombre, descripcion, tiene_subpasos, total_subpasos')
+    .order('orden', { ascending: true })
+
+  // 3. Cargar el seguimiento existente de esta persona
   const { data: seguimientos } = await supabase
     .from('seguimiento_etapas')
-    .select(`
-      id,
-      completado,
-      subpasos_completados,
-      notas,
-      fecha_completado,
-      etapa:etapas_plan (
-        id,
-        orden,
-        nombre,
-        descripcion,
-        tiene_subpasos,
-        total_subpasos
-      )
-    `)
+    .select('id, etapa_id, completado, subpasos_completados, notas, fecha_completado')
     .eq('persona_id', personaId)
 
-  // 🎯 Solución al error ts(2339): extraemos y normalizamos el objeto 'etapa'
-  const seguimientoCartilla = seguimientos?.find((s: any) => {
-    // Si Supabase devuelve 'etapa' como array, tomamos el primer elemento, si no, el objeto directo
-    const etapaObj = Array.isArray(s.etapa) ? s.etapa[0] : s.etapa
-    return (
-      etapaObj?.orden === 1 ||
-      etapaObj?.nombre?.toLowerCase().includes('conociendo')
-    )
-  }) || seguimientos?.[0]
+  // Mapear seguimientos por etapa_id para acceso rápido
+  const mapaSeguimientos = new Map<string, any>()
+  seguimientos?.forEach((s) => {
+    mapaSeguimientos.set(s.etapa_id, s)
+  })
 
-  // Extraemos la etapa del seguimiento seleccionado
-  const rawEtapa = seguimientoCartilla
-    ? Array.isArray(seguimientoCartilla.etapa)
-      ? seguimientoCartilla.etapa[0]
-      : seguimientoCartilla.etapa
-    : null
+  // 4. Calcular el avance global del plan
+  const totalEtapas = todasLasEtapas?.length || 0
+  const etapasCompletadas = todasLasEtapas?.filter((e) => {
+    const seg = mapaSeguimientos.get(e.id)
+    return seg?.completado
+  }).length || 0
 
-  // Formateamos el objeto de la etapa asegurando los campos requeridos
-  const etapaCartilla = rawEtapa
-    ? {
-        orden: rawEtapa.orden ?? 1,
-        nombre: 'Cartilla: Conociendo a Jesús',
-        descripcion: 'Seguimiento del plan inicial de 5 lecciones de consolidación.',
-        tiene_subpasos: true,
-        total_subpasos: 5,
-      }
-    : null
-
-  // Cálculo del progreso (Basado en las 5 lecciones)
-  const subpasosActuales = seguimientoCartilla?.subpasos_completados || 0
-  const porcentajeTotal = Math.round((subpasosActuales / 5) * 100)
+  const porcentajeGlobal = totalEtapas > 0 ? Math.round((etapasCompletadas / totalEtapas) * 100) : 0
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 pb-16">
@@ -92,7 +67,7 @@ export default async function SeguimientoPersonaPage({
 
           <div className="flex items-center gap-2">
             <span className="text-xs font-medium text-gray-400 hidden sm:inline">
-              Plan Vida Abundante
+              Ruta de Crecimiento Llevando Vida
             </span>
             <Image
               src="/images/Logo-Negro.png"
@@ -109,7 +84,7 @@ export default async function SeguimientoPersonaPage({
         {/* Banner de la Persona */}
         <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-[#0eb6f4] bg-[#006C69]/10 px-2.5 py-1 rounded-full">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-[#0eb6f4] bg-[#0eb6f4]/10 px-2.5 py-1 rounded-full">
               Ficha de Consolidación
             </span>
             <h1 className="text-2xl font-bold text-gray-800 pt-1">
@@ -126,48 +101,64 @@ export default async function SeguimientoPersonaPage({
             </div>
           </div>
 
-          {/* Widget de Progreso Compacto para 5 lecciones */}
+          {/* Widget de Progreso General */}
           <div className="bg-gray-50 border border-gray-100 p-4 rounded-xl flex flex-col justify-between min-w-[220px]">
             <div className="flex justify-between items-center text-xs font-bold text-gray-700 mb-2">
-              <span>Avance de Cartilla</span>
+              <span>Avance Global</span>
               <span className="text-[#0eb6f4]">
-                {subpasosActuales} / 5 Lecciones
+                {etapasCompletadas} / {totalEtapas} Etapas
               </span>
             </div>
             <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden mb-1">
               <div
                 className="bg-[#0eb6f4] h-full rounded-full transition-all duration-500"
-                style={{ width: `${porcentajeTotal}%` }}
+                style={{ width: `${porcentajeGlobal}%` }}
               />
             </div>
             <span className="text-[11px] text-right text-gray-400 font-medium">
-              {porcentajeTotal}% Completado
+              {porcentajeGlobal}% Completado
             </span>
           </div>
         </div>
 
         <div className="flex justify-between items-center pt-2">
           <h2 className="text-lg font-bold text-gray-800">
-            Seguimiento: Conociendo a Jesús
+            Ruta de Crecimiento ({totalEtapas} Etapas)
           </h2>
           <span className="text-xs text-gray-500">
-            Actualiza las lecciones realizadas
+            Marca el progreso de cada etapa
           </span>
         </div>
 
-        {/* Tarjeta de la Cartilla */}
-        {seguimientoCartilla && etapaCartilla ? (
-          <EtapaItemCard
-            seguimientoId={seguimientoCartilla.id}
-            personaId={persona.id}
-            etapa={etapaCartilla}
-            completadoInicial={seguimientoCartilla.completado}
-            subpasosIniciales={seguimientoCartilla.subpasos_completados}
-            notasIniciales={seguimientoCartilla.notas || ''}
-          />
+        {/* Lista Completa de Etapas */}
+        {!todasLasEtapas || todasLasEtapas.length === 0 ? (
+          <div className="bg-white border rounded-xl p-8 text-center text-gray-500 text-sm">
+            No hay etapas configuradas en la tabla <code className="text-xs font-mono">etapas_plan</code>.
+          </div>
         ) : (
-          <div className="bg-white border rounded-xl p-6 text-center text-gray-500 text-sm">
-            No se encontró el registro de seguimiento para este consolidado.
+          <div className="space-y-4">
+            {todasLasEtapas.map((etapa) => {
+              const seguimiento = mapaSeguimientos.get(etapa.id)
+
+              return (
+                <EtapaItemCard
+                  key={etapa.id}
+                  seguimientoId={seguimiento?.id || null}
+                  personaId={persona.id}
+                  etapa={{
+                    id: etapa.id,
+                    orden: etapa.orden,
+                    nombre: etapa.nombre,
+                    descripcion: etapa.descripcion,
+                    tiene_subpasos: etapa.tiene_subpasos,
+                    total_subpasos: etapa.total_subpasos,
+                  }}
+                  completadoInicial={seguimiento?.completado || false}
+                  subpasosIniciales={seguimiento?.subpasos_completados || 0}
+                  notasIniciales={seguimiento?.notas || ''}
+                />
+              )
+            })}
           </div>
         )}
       </main>

@@ -149,7 +149,7 @@ export default async function AdminReporteConsolidadoPage({
             <div className="bg-gray-50 border border-gray-200/80 p-4 rounded-xl flex flex-col justify-center min-w-[220px]">
               <div className="flex justify-between items-center text-xs font-bold text-gray-700 mb-1.5">
                 <span>Progreso General</span>
-                <span className="text-[#0eb6f4] font-extrabold">{completadasCount} de 8 Etapas</span>
+                <span className="text-[#0eb6f4] font-extrabold">{completadasCount} de 5 Etapas</span>
               </div>
               <div className="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden mb-1">
                 <div
