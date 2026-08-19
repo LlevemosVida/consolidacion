@@ -2,57 +2,57 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { crearPersona, reasignarLider } from '@/app/actions/personas-actions'
+import { obtenerGrupos } from '@/app/actions/grupos-actions'
 import ResetPasswordModal from '@/components/ResetPasswordModal'
+import CrearPersonaForm from '@/components/personas/CrearPersonaForm'
+import CrearGrupoForm from '@/components/personas/CrearGrupoForm'
+import EditarPersonaModal from '@/components/personas/EditarPersonasModal'
 import Link from 'next/link'
 
-// --- Interfaces ---
 interface Persona {
   id: string
   nombre_completo: string
   telefono?: string
   direccion?: string
-  tipo_persona: 'nuevo' | 'lider' | 'pastor'
+  tipo_persona: 'nuevo' | 'miembro' | 'lider' | 'pastor'
   lider_asignado_id?: string | null
+  grupo_id?: string | null
   auth_user_id?: string | null
   nombre_lider_asignado?: string | null
+  barrio_grupo?: string | null
   created_at: string
 }
 
-type ModoModal = 'nuevo' | 'lider' | 'asignar'
-type FiltroEstado = 'todos' | 'sin_lider' | 'con_lider'
+interface Grupo {
+  id: string
+  barrio: string
+}
+
+type ModoModal = 'persona' | 'grupo'
 
 export default function PersonasPage() {
   const [personas, setPersonas] = useState<Persona[]>([])
   const [lideres, setLideres] = useState<Persona[]>([])
+  const [grupos, setGrupos] = useState<Grupo[]>([])
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
+  const [modoModal, setModoModal] = useState<ModoModal>('persona')
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
-  // Estado del modal de reset clave
-  const [resetModalState, setResetModalState] = useState<{
-    isOpen: boolean
-    authUserId: string
-    nombre: string
-  }>({ isOpen: false, authUserId: '', nombre: '' })
+  // Estados para Filtros
+  const [busqueda, setBusqueda] = useState('')
+  const [filtroTipo, setFiltroTipo] = useState<string>('todos')
+  const [filtroGrupo, setFiltroGrupo] = useState<string>('todos')
+  const [filtroLider, setFiltroLider] = useState<string>('todos')
 
-  // Pestañas del modal
-  const [modoModal, setModoModal] = useState<ModoModal>('nuevo')
+  // Estado para controlar la persona enviada al Modal de Edición
+  const [personaAEditar, setPersonaAEditar] = useState<Persona | null>(null)
 
-  // Campos de formulario para crear persona
-  const [nombreCompleto, setNombreCompleto] = useState('')
-  const [telefono, setTelefono] = useState('')
-  const [direccion, setDireccion] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [liderAsignadoId, setLiderAsignadoId] = useState('')
-
-  // Campos y Filtros para Asignación Masiva
-  const [liderDestinoId, setLiderDestinoId] = useState('')
-  const [personasSeleccionadas, setPersonasSeleccionadas] = useState<string[]>([])
-  const [busquedaNuevos, setBusquedaNuevos] = useState('')
-  const [filtroEstadoLider, setFiltroEstadoLider] = useState<FiltroEstado>('todos')
+  const [resetModalState, setResetModalState] = useState({
+    isOpen: false,
+    authUserId: '',
+    nombre: '',
+  })
 
   const supabase = useMemo(() => createClient(), [])
 
@@ -61,12 +61,14 @@ export default function PersonasPage() {
 
     const { data, error } = await supabase
       .from('personas')
-      .select('*, lider:lider_asignado_id(nombre_completo)')
+      .select('*, lider:lider_asignado_id(nombre_completo), grupo:grupo_id(barrio)')
       .order('created_at', { ascending: false })
 
+    const listaGrupos = await obtenerGrupos()
+    setGrupos(listaGrupos)
+
     if (error) {
-      console.error('Error al cargar personas:', error)
-      setMessage({ type: 'error', text: 'Error al cargar el listado de personas.' })
+      setMessage({ type: 'error', text: 'Error al cargar los datos.' })
       setLoading(false)
       return
     }
@@ -75,14 +77,11 @@ export default function PersonasPage() {
       const personasFormateadas: Persona[] = data.map((p: any) => ({
         ...p,
         nombre_lider_asignado: p.lider?.nombre_completo || null,
+        barrio_grupo: p.grupo?.barrio || null,
       }))
 
       setPersonas(personasFormateadas)
-      setLideres(
-        personasFormateadas.filter(
-          (p) => p.tipo_persona === 'lider' || p.tipo_persona === 'pastor'
-        )
-      )
+      setLideres(personasFormateadas.filter((p) => p.tipo_persona === 'lider' || p.tipo_persona === 'pastor'))
     }
 
     setLoading(false)
@@ -92,128 +91,75 @@ export default function PersonasPage() {
     cargarDatos()
   }, [cargarDatos])
 
-  const resetFormularios = () => {
-    setNombreCompleto('')
-    setTelefono('')
-    setDireccion('')
-    setEmail('')
-    setPassword('')
-    setLiderAsignadoId('')
-    setLiderDestinoId('')
-    setPersonasSeleccionadas([])
-    setBusquedaNuevos('')
-    setFiltroEstadoLider('todos')
+  // Lógica de filtrado dinámico
+  const personasFiltradas = useMemo(() => {
+    return personas.filter((p) => {
+      // Filtro por Nombre / Búsqueda
+      const coincideNombre = p.nombre_completo
+        .toLowerCase()
+        .includes(busqueda.toLowerCase())
+
+      // Filtro por Tipo de Persona
+      const coincideTipo =
+        filtroTipo === 'todos' || p.tipo_persona === filtroTipo
+
+      // Filtro por Grupo en Casa
+      const coincideGrupo =
+        filtroGrupo === 'todos'
+          ? true
+          : filtroGrupo === 'sin_grupo'
+          ? !p.grupo_id
+          : p.grupo_id === filtroGrupo
+
+      // Filtro por Líder Asignado
+      const coincideLider =
+        filtroLider === 'todos'
+          ? true
+          : filtroLider === 'sin_lider'
+          ? !p.lider_asignado_id
+          : p.lider_asignado_id === filtroLider
+
+      return coincideNombre && coincideTipo && coincideGrupo && coincideLider
+    })
+  }, [personas, busqueda, filtroTipo, filtroGrupo, filtroLider])
+
+  const limpiarFiltros = () => {
+    setBusqueda('')
+    setFiltroTipo('todos')
+    setFiltroGrupo('todos')
+    setFiltroLider('todos')
   }
 
-  const handleCloseModal = () => {
+  const handleSuccessModal = () => {
     setIsModalOpen(false)
-    resetFormularios()
+    setMessage({ type: 'success', text: 'Operación realizada correctamente.' })
+    cargarDatos()
   }
 
-  const listaNuevosFiltrada = useMemo(() => {
-    return personas
-      .filter((p) => p.tipo_persona === 'nuevo')
-      .filter((p) => {
-        const coincideNombre = p.nombre_completo
-          .toLowerCase()
-          .includes(busquedaNuevos.toLowerCase())
-        if (!coincideNombre) return false
-
-        if (filtroEstadoLider === 'sin_lider') return !p.lider_asignado_id
-        if (filtroEstadoLider === 'con_lider') return Boolean(p.lider_asignado_id)
-        return true
-      })
-  }, [personas, busquedaNuevos, filtroEstadoLider])
-
-  const handleToggleSeleccion = (personaId: string) => {
-    setPersonasSeleccionadas((prev) =>
-      prev.includes(personaId)
-        ? prev.filter((id) => id !== personaId)
-        : [...prev, personaId]
-    )
+  const handleSuccessEdicion = () => {
+    setPersonaAEditar(null)
+    setMessage({ type: 'success', text: 'Persona actualizada con éxito.' })
+    cargarDatos()
   }
 
-  const handleSelectAllNuevos = () => {
-    const idsVisibles = listaNuevosFiltrada.map((p) => p.id)
-    const todosSeleccionados = idsVisibles.every((id) =>
-      personasSeleccionadas.includes(id)
-    )
-
-    if (todosSeleccionados) {
-      setPersonasSeleccionadas((prev) =>
-        prev.filter((id) => !idsVisibles.includes(id))
-      )
-    } else {
-      setPersonasSeleccionadas((prev) =>
-        Array.from(new Set([...prev, ...idsVisibles]))
-      )
-    }
-  }
-
-  const handleSubmitCrear = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSubmitting(true)
-    setMessage(null)
-
-    const res = await crearPersona({
-      nombreCompleto,
-      telefono,
-      direccion,
-      tipoPersona: modoModal === 'lider' ? 'lider' : 'nuevo',
-      rolSistema: modoModal === 'lider' ? 'lider' : null,
-      email: modoModal === 'lider' ? email : undefined,
-      password: modoModal === 'lider' ? password : undefined,
-      liderAsignadoId: modoModal === 'nuevo' ? liderAsignadoId : undefined,
-    })
-
-    setSubmitting(false)
-
-    if (res.error) {
-      setMessage({ type: 'error', text: res.error })
-    } else {
-      setMessage({ type: 'success', text: 'Persona registrada correctamente.' })
-      handleCloseModal()
-      cargarDatos()
-    }
-  }
-
-  const handleSubmitAsignar = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!liderDestinoId) {
-      alert('Por favor selecciona un líder de destino.')
-      return
-    }
-    if (personasSeleccionadas.length === 0) {
-      alert('Por favor selecciona al menos un integrante para reasignar.')
-      return
-    }
-
-    setSubmitting(true)
-    setMessage(null)
-
-    const res = await reasignarLider({
-      liderId: liderDestinoId,
-      personasIds: personasSeleccionadas,
-    })
-
-    setSubmitting(false)
-
-    if (res.error) {
-      setMessage({ type: 'error', text: res.error })
-    } else {
-      setMessage({
-        type: 'success',
-        text: `Se reasignaron ${personasSeleccionadas.length} integrante(s) exitosamente.`,
-      })
-      handleCloseModal()
-      cargarDatos()
+  const obtenerEtiquetaTipo = (tipo: string) => {
+    switch (tipo) {
+      case 'nuevo':
+        return 'Nuevo'
+      case 'miembro':
+        return 'Miembro'
+      case 'lider':
+        return 'Líder'
+      case 'pastor':
+        return 'Pastor'
+      default:
+        return tipo
     }
   }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
-        {/* Encabezado */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <Link
@@ -223,28 +169,24 @@ export default function PersonasPage() {
               &larr; Volver al Panel
             </Link>
             <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
-              Gestión de Integrantes
+              Gestión de Integrantes y Grupos
             </h1>
-            <p className="text-xs text-slate-500">
-              Administra a los líderes de consolidación y nuevos integrantes registrados
-            </p>
           </div>
 
           <button
             onClick={() => {
-              resetFormularios()
+              setModoModal('persona')
               setIsModalOpen(true)
             }}
-            className="bg-[#0eb6f4] text-white font-semibold px-4 py-2.5 rounded-xl text-sm shadow-md shadow-[#0eb6f4]/25 hover:bg-[#0284c7] transition-all duration-200 flex items-center justify-center gap-2 shrink-0"
+            className="bg-[#0eb6f4] text-white font-semibold px-4 py-2.5 rounded-xl text-sm shadow-md hover:bg-[#0284c7] transition flex items-center justify-center gap-2"
           >
-            <span className="text-lg leading-none">+</span> Crear / Asignar Persona
+            <span>+</span> Administrar Integrantes / Grupos
           </button>
         </div>
 
-        {/* Mensajes de Alerta */}
         {message && (
           <div
-            className={`p-3.5 rounded-xl text-sm border-l-4 shadow-sm ${
+            className={`p-3.5 rounded-xl text-sm border-l-4 ${
               message.type === 'success'
                 ? 'bg-emerald-50 border-emerald-500 text-emerald-800'
                 : 'bg-red-50 border-red-500 text-red-800'
@@ -254,15 +196,111 @@ export default function PersonasPage() {
           </div>
         )}
 
-        {/* Tabla Principal */}
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        {/* Panel de Búsqueda y Filtros */}
+        <div className="bg-white p-4 rounded-2xl border shadow-sm space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* Búsqueda por Nombre */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1">
+                Buscar por Nombre
+              </label>
+              <input
+                type="text"
+                placeholder="Ej: Juan Pérez..."
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                className="w-full px-3 py-2 text-xs sm:text-sm border rounded-xl focus:ring-2 focus:ring-[#0eb6f4] outline-none bg-slate-50"
+              />
+            </div>
+
+            {/* Filtro por Tipo */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1">
+                Tipo
+              </label>
+              <select
+                value={filtroTipo}
+                onChange={(e) => setFiltroTipo(e.target.value)}
+                className="w-full px-3 py-2 text-xs sm:text-sm border rounded-xl focus:ring-2 focus:ring-[#0eb6f4] outline-none bg-slate-50"
+              >
+                <option value="todos">Todos los Tipos</option>
+                <option value="nuevo">Nuevo / Integrante</option>
+                <option value="miembro">Miembro</option>
+                <option value="lider">Líder</option>
+                <option value="pastor">Pastor</option>
+              </select>
+            </div>
+
+            {/* Filtro por Grupo */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1">
+                Grupo en Casa
+              </label>
+              <select
+                value={filtroGrupo}
+                onChange={(e) => setFiltroGrupo(e.target.value)}
+                className="w-full px-3 py-2 text-xs sm:text-sm border rounded-xl focus:ring-2 focus:ring-[#0eb6f4] outline-none bg-slate-50"
+              >
+                <option value="todos">Todos los Grupos</option>
+                <option value="sin_grupo">Sin Grupo Asignado</option>
+                {grupos.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    🏡 {g.barrio}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Filtro por Líder */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1">
+                Líder Asignado
+              </label>
+              <select
+                value={filtroLider}
+                onChange={(e) => setFiltroLider(e.target.value)}
+                className="w-full px-3 py-2 text-xs sm:text-sm border rounded-xl focus:ring-2 focus:ring-[#0eb6f4] outline-none bg-slate-50"
+              >
+                <option value="todos">Todos los Líderes</option>
+                <option value="sin_lider">Sin Líder Asignado</option>
+                {lideres.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.nombre_completo}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Estado de Filtros / Botón Limpiar */}
+          <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t">
+            <span>
+              Mostrando <strong className="text-slate-800">{personasFiltradas.length}</strong> de{' '}
+              {personas.length} registros
+            </span>
+            {(busqueda ||
+              filtroTipo !== 'todos' ||
+              filtroGrupo !== 'todos' ||
+              filtroLider !== 'todos') && (
+              <button
+                onClick={limpiarFiltros}
+                className="text-[#0eb6f4] hover:text-[#0284c7] font-semibold transition"
+              >
+                Limpiar Filtros
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Tabla principal */}
+        <div className="bg-white border rounded-2xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <tr className="bg-slate-50 border-b text-xs font-semibold text-slate-500 uppercase">
                   <th className="p-3.5 sm:p-4">Nombre</th>
                   <th className="p-3.5 sm:p-4">Tipo</th>
-                  <th className="p-3.5 sm:p-4">Teléfono</th>
+                  <th className="p-3.5 sm:p-4">Grupo en Casa</th>
                   <th className="p-3.5 sm:p-4">Líder Asignado</th>
                   <th className="p-3.5 sm:p-4 text-right">Acciones</th>
                 </tr>
@@ -271,48 +309,48 @@ export default function PersonasPage() {
                 {loading ? (
                   <tr>
                     <td colSpan={5} className="p-8 text-center text-slate-400">
-                      Cargando integrantes...
+                      Cargando registros...
                     </td>
                   </tr>
-                ) : personas.length === 0 ? (
+                ) : personasFiltradas.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="p-8 text-center text-slate-400">
-                      No hay integrantes registrados en el sistema.
+                      No se encontraron resultados con los filtros seleccionados.
                     </td>
                   </tr>
                 ) : (
-                  personas.map((p) => (
-                    <tr
-                      key={p.id}
-                      className="hover:bg-sky-50/40 transition-colors"
-                    >
-                      <td className="p-3.5 sm:p-4 font-semibold text-slate-800">
-                        {p.nombre_completo}
-                      </td>
+                  personasFiltradas.map((p) => (
+                    <tr key={p.id} className="hover:bg-sky-50/40">
+                      <td className="p-3.5 sm:p-4 font-semibold text-slate-800">{p.nombre_completo}</td>
                       <td className="p-3.5 sm:p-4">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
                             p.tipo_persona === 'nuevo'
                               ? 'bg-sky-100 text-[#0284c7]'
+                              : p.tipo_persona === 'miembro'
+                              ? 'bg-emerald-100 text-emerald-700'
                               : 'bg-[#0eb6f4]/15 text-[#0369a1]'
                           }`}
                         >
-                          {p.tipo_persona === 'nuevo' ? 'Nuevo' : 'Líder'}
+                          {obtenerEtiquetaTipo(p.tipo_persona)}
                         </span>
                       </td>
                       <td className="p-3.5 sm:p-4 text-slate-600">
-                        {p.telefono || '—'}
+                        {p.barrio_grupo ? `🏡 ${p.barrio_grupo}` : <span className="text-slate-400 italic">Sin Grupo</span>}
                       </td>
                       <td className="p-3.5 sm:p-4 text-slate-600">
-                        {p.nombre_lider_asignado ? (
-                          <span className="font-semibold text-slate-700">
-                            {p.nombre_lider_asignado}
-                          </span>
-                        ) : (
-                          <span className="text-slate-400 italic">Sin Líder</span>
-                        )}
+                        {p.nombre_lider_asignado || <span className="text-slate-400 italic">Sin Líder</span>}
                       </td>
-                      <td className="p-3.5 sm:p-4 text-right">
+                      <td className="p-3.5 sm:p-4 text-right space-x-3">
+                        {/* Botón de Edición General */}
+                        <button
+                          onClick={() => setPersonaAEditar(p)}
+                          className="text-xs text-[#0eb6f4] hover:text-[#0284c7] font-semibold hover:underline"
+                        >
+                          Editar
+                        </button>
+
+                        {/* Botón de Reset Password */}
                         {p.auth_user_id && (
                           <button
                             onClick={() =>
@@ -322,9 +360,9 @@ export default function PersonasPage() {
                                 nombre: p.nombre_completo,
                               })
                             }
-                            className="text-xs text-[#0eb6f4] hover:text-[#0284c7] font-semibold hover:underline whitespace-nowrap"
+                            className="text-xs text-slate-500 hover:text-slate-700 hover:underline"
                           >
-                            Restablecer Clave
+                            Clave
                           </button>
                         )}
                       </td>
@@ -336,327 +374,71 @@ export default function PersonasPage() {
           </div>
         </div>
 
-        {/* Modal General */}
+        {/* Modal Principal Unificado */}
         {isModalOpen && (
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-white text-slate-900 rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-100 space-y-5">
-              <h3 className="text-lg font-bold text-slate-900">
-                Administrar Integrantes
-              </h3>
+            <div className="bg-white text-slate-900 rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+              <h3 className="text-lg font-bold">Administrar Sistema</h3>
 
-              {/* Pestañas de Navegación con alternancia visual */}
-              <div className="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+              {/* Pestañas Simplificadas */}
+              <div className="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
                 <button
-                  type="button"
-                  onClick={() => setModoModal('nuevo')}
-                  className={`py-2 rounded-lg transition-all ${
-                    modoModal === 'nuevo'
-                      ? 'bg-white text-[#0eb6f4] shadow-sm font-bold'
-                      : 'text-slate-500 hover:text-slate-800'
+                  onClick={() => setModoModal('persona')}
+                  className={`py-2 rounded-lg transition ${
+                    modoModal === 'persona' ? 'bg-white text-[#0eb6f4] shadow-sm font-bold' : 'text-slate-500'
                   }`}
                 >
-                  Nuevo Integrante
+                  Crear Persona
                 </button>
                 <button
-                  type="button"
-                  onClick={() => setModoModal('lider')}
-                  className={`py-2 rounded-lg transition-all ${
-                    modoModal === 'lider'
-                      ? 'bg-white text-[#0eb6f4] shadow-sm font-bold'
-                      : 'text-slate-500 hover:text-slate-800'
+                  onClick={() => setModoModal('grupo')}
+                  className={`py-2 rounded-lg transition ${
+                    modoModal === 'grupo' ? 'bg-white text-[#0eb6f4] shadow-sm font-bold' : 'text-slate-500'
                   }`}
                 >
-                  Crear Líder
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setModoModal('asignar')}
-                  className={`py-2 rounded-lg transition-all ${
-                    modoModal === 'asignar'
-                      ? 'bg-white text-[#0eb6f4] shadow-sm font-bold'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  Asignar / Reasignar
+                  Crear Grupo
                 </button>
               </div>
 
-              {/* CREAR NUEVO O LÍDER */}
-              {(modoModal === 'nuevo' || modoModal === 'lider') && (
-                <form onSubmit={handleSubmitCrear} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">
-                      Nombre Completo
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={nombreCompleto}
-                      onChange={(e) => setNombreCompleto(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 bg-white focus:ring-2 focus:ring-[#0eb6f4] focus:border-transparent outline-none transition"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">
-                        Teléfono
-                      </label>
-                      <input
-                        type="text"
-                        value={telefono}
-                        onChange={(e) => setTelefono(e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 bg-white focus:ring-2 focus:ring-[#0eb6f4] focus:border-transparent outline-none transition"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">
-                        Dirección
-                      </label>
-                      <input
-                        type="text"
-                        value={direccion}
-                        onChange={(e) => setDireccion(e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 bg-white focus:ring-2 focus:ring-[#0eb6f4] focus:border-transparent outline-none transition"
-                      />
-                    </div>
-                  </div>
-
-                  {modoModal === 'nuevo' && (
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">
-                        Asignar Líder Inicial
-                      </label>
-                      <select
-                        value={liderAsignadoId}
-                        onChange={(e) => setLiderAsignadoId(e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 bg-white focus:ring-2 focus:ring-[#0eb6f4] focus:border-transparent outline-none transition"
-                      >
-                        <option value="">Sin Líder Asignado</option>
-                        {lideres.map((l) => (
-                          <option key={l.id} value={l.id}>
-                            {l.nombre_completo}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-
-                  {modoModal === 'lider' && (
-                    <>
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1">
-                          Correo Electrónico
-                        </label>
-                        <input
-                          type="email"
-                          required
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 bg-white focus:ring-2 focus:ring-[#0eb6f4] focus:border-transparent outline-none transition"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1">
-                          Contraseña Inicial
-                        </label>
-                        <input
-                          type="password"
-                          required
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 bg-white focus:ring-2 focus:ring-[#0eb6f4] focus:border-transparent outline-none transition"
-                          placeholder="Mínimo 6 caracteres"
-                        />
-                      </div>
-                    </>
-                  )}
-
-                  <div className="flex justify-end gap-3 pt-4">
-                    <button
-                      type="button"
-                      onClick={handleCloseModal}
-                      className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition"
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={submitting}
-                      className="px-4 py-2 bg-[#0eb6f4] text-white rounded-lg text-sm font-semibold hover:bg-[#0284c7] disabled:opacity-50 transition shadow-sm"
-                    >
-                      {submitting ? 'Guardando...' : 'Guardar Integrante'}
-                    </button>
-                  </div>
-                </form>
+              {/* Formulario Dinámico Unificado */}
+              {modoModal === 'persona' && (
+                <CrearPersonaForm
+                  lideres={lideres}
+                  grupos={grupos}
+                  onSuccess={handleSuccessModal}
+                  onCancel={() => setIsModalOpen(false)}
+                />
               )}
 
-              {/* PESTAÑA: REASIGNAR INTEGRANTES */}
-              {modoModal === 'asignar' && (
-                <form onSubmit={handleSubmitAsignar} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">
-                      1. Selecciona el Líder de Destino
-                    </label>
-                    <select
-                      required
-                      value={liderDestinoId}
-                      onChange={(e) => setLiderDestinoId(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 bg-white focus:ring-2 focus:ring-[#0eb6f4] focus:border-transparent outline-none transition font-medium"
-                    >
-                      <option value="">-- Seleccionar Líder --</option>
-                      {lideres.map((l) => (
-                        <option key={l.id} value={l.id}>
-                          {l.nombre_completo}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-slate-600">
-                        2. Selecciona Integrantes
-                      </label>
-                      <button
-                        type="button"
-                        onClick={handleSelectAllNuevos}
-                        className="text-[11px] font-bold text-[#0eb6f4] hover:text-[#0284c7] hover:underline"
-                      >
-                        Marcar / Desmarcar Visibles
-                      </button>
-                    </div>
-
-                    {/* Búsqueda y Filtros */}
-                    <div className="flex gap-2 text-xs">
-                      <input
-                        type="text"
-                        placeholder="Buscar por nombre..."
-                        value={busquedaNuevos}
-                        onChange={(e) => setBusquedaNuevos(e.target.value)}
-                        className="flex-1 px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-[#0eb6f4] bg-white text-slate-800"
-                      />
-                      <select
-                        value={filtroEstadoLider}
-                        onChange={(e) =>
-                          setFiltroEstadoLider(e.target.value as FiltroEstado)
-                        }
-                        className="px-2 py-1.5 border border-slate-200 rounded-lg text-slate-600 bg-white"
-                      >
-                        <option value="todos">Todos</option>
-                        <option value="sin_lider">Sin Líder</option>
-                        <option value="con_lider">Con Líder</option>
-                      </select>
-                    </div>
-
-                    {/* Listado con Alternancias de Selección */}
-                    <div className="max-h-56 overflow-y-auto border border-slate-200 rounded-xl divide-y divide-slate-100 bg-slate-50/50 p-1 space-y-1">
-                      {listaNuevosFiltrada.length === 0 ? (
-                        <p className="text-xs text-slate-400 p-4 text-center italic">
-                          No hay integrantes que coincidan con la búsqueda.
-                        </p>
-                      ) : (
-                        listaNuevosFiltrada.map((p) => {
-                          const checked = personasSeleccionadas.includes(p.id)
-                          const tieneLider = Boolean(p.nombre_lider_asignado)
-
-                          return (
-                            <label
-                              key={p.id}
-                              className={`flex items-center justify-between p-2.5 rounded-lg cursor-pointer text-xs transition ${
-                                checked
-                                  ? 'bg-[#0eb6f4]/15 border border-[#0eb6f4]/40 shadow-sm'
-                                  : 'hover:bg-white bg-white/70'
-                              }`}
-                            >
-                              <div className="flex items-center gap-3">
-                                <input
-                                  type="checkbox"
-                                  checked={checked}
-                                  onChange={() => handleToggleSeleccion(p.id)}
-                                  className="rounded text-[#0eb6f4] focus:ring-[#0eb6f4] w-4 h-4 accent-[#0eb6f4]"
-                                />
-                                <div>
-                                  <span className="font-bold text-slate-800 block">
-                                    {p.nombre_completo}
-                                  </span>
-                                  {p.telefono && (
-                                    <span className="text-[11px] text-slate-400 block">
-                                      📞 {p.telefono}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-
-                              <div>
-                                {tieneLider ? (
-                                  <span className="inline-flex items-center text-[10px] bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-md font-semibold">
-                                    Líder: {p.nombre_lider_asignado}
-                                  </span>
-                                ) : (
-                                  <span className="inline-flex items-center text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md font-medium">
-                                    Sin Líder
-                                  </span>
-                                )}
-                              </div>
-                            </label>
-                          )
-                        })
-                      )}
-                    </div>
-
-                    <div className="flex justify-between items-center text-[11px] text-slate-500 pt-1">
-                      <span>
-                        Mostrando <strong>{listaNuevosFiltrada.length}</strong>{' '}
-                        personas
-                      </span>
-                      <span>
-                        Seleccionadas:{' '}
-                        <strong className="text-[#0eb6f4]">
-                          {personasSeleccionadas.length}
-                        </strong>
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
-                    <button
-                      type="button"
-                      onClick={handleCloseModal}
-                      className="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition"
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={
-                        submitting || personasSeleccionadas.length === 0
-                      }
-                      className="px-4 py-2 bg-[#0eb6f4] text-white rounded-lg text-sm font-semibold hover:bg-[#0284c7] disabled:opacity-50 transition shadow-sm"
-                    >
-                      {submitting
-                        ? 'Reasignando...'
-                        : `Asignar ${personasSeleccionadas.length} Persona(s)`}
-                    </button>
-                  </div>
-                </form>
+              {modoModal === 'grupo' && (
+                <CrearGrupoForm
+                  lideres={lideres}
+                  onSuccess={handleSuccessModal}
+                  onCancel={() => setIsModalOpen(false)}
+                />
               )}
             </div>
           </div>
         )}
+
+        {/* Modal de Edición de Persona */}
+        <EditarPersonaModal
+          isOpen={Boolean(personaAEditar)}
+          persona={personaAEditar}
+          lideres={lideres}
+          grupos={grupos}
+          onClose={() => setPersonaAEditar(null)}
+          onSuccess={handleSuccessEdicion}
+        />
 
         {/* Modal Reset Password */}
         <ResetPasswordModal
           isOpen={resetModalState.isOpen}
           authUserId={resetModalState.authUserId}
           nombrePersona={resetModalState.nombre}
-          onClose={() =>
-            setResetModalState((prev) => ({ ...prev, isOpen: false }))
-          }
+          onClose={() => setResetModalState((prev) => ({ ...prev, isOpen: false }))}
         />
       </div>
     </div>
   )
 }
-
-

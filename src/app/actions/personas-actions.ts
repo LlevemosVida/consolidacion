@@ -4,21 +4,21 @@ import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-// Server Action para crear una nueva persona (Líder o Nuevo)
 export async function crearPersona(formData: {
   nombreCompleto: string
   telefono?: string
   direccion?: string
-  tipoPersona: 'nuevo' | 'lider' | 'pastor'
-  rolSistema?: 'super_admin' | 'encargado' | 'pastor' | 'lider' | null
-  email?: string // Solo para Líder / Pastor
-  password?: string // Solo para Líder / Pastor
-  liderAsignadoId?: string // Solo para Nuevos
-  fechaIngreso?: string // Solo para Nuevos
+  tipoPersona: 'nuevo' | 'miembro' | 'lider' | 'pastor'
+  rolSistema?: 'super_admin' | 'encargado' | 'pastor' | 'lider' | 'miembro' | null
+  email?: string
+  password?: string
+  liderAsignadoId?: string
+  fechaIngreso?: string
+  grupoId?: string
 }) {
   const supabase = await createServerClient()
 
-  // 1. Validar que quien ejecuta la acción sea Pastor/Admin/Encargado
+  // 1. Validar autenticación
   const {
     data: { user: currentUser },
   } = await supabase.auth.getUser()
@@ -37,8 +37,11 @@ export async function crearPersona(formData: {
 
   let authUserId: string | null = null
 
-  // 2. Si se está creando un Líder/Pastor, crear primero su cuenta en Supabase Auth
-  if (formData.tipoPersona !== 'nuevo' && formData.email && formData.password) {
+  // Evaluamos si el registro es sin credenciales de usuario (Nuevo o Miembro)
+  const esRegistroSinCredenciales = formData.tipoPersona === 'nuevo' || formData.tipoPersona === 'miembro'
+
+  // 2. Crear usuario en Supabase Auth solo si requiere acceso (Líder, Admin, Pastor)
+  if (!esRegistroSinCredenciales && formData.email && formData.password) {
     const supabaseAdmin = createAdminClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -57,18 +60,19 @@ export async function crearPersona(formData: {
     authUserId = authData.user.id
   }
 
-  // 3. Insertar en la tabla 'personas'
+  // 3. Insertar registro en la tabla 'personas'
   const { error: insertError } = await supabase.from('personas').insert({
     nombre_completo: formData.nombreCompleto,
     telefono: formData.telefono || null,
     direccion: formData.direccion || null,
     iglesia_id: currentPersona.iglesia_id,
     tipo_persona: formData.tipoPersona,
-    rol_sistema: formData.tipoPersona === 'nuevo' ? null : formData.rolSistema || 'lider',
+    rol_sistema: esRegistroSinCredenciales ? (formData.tipoPersona === 'miembro' ? 'miembro' : null) : formData.rolSistema,
     auth_user_id: authUserId,
-    lider_asignado_id: formData.tipoPersona === 'nuevo' ? formData.liderAsignadoId || null : null,
+    grupo_id: formData.grupoId || null,
+    lider_asignado_id: esRegistroSinCredenciales ? formData.liderAsignadoId || null : null,
     fecha_ingreso:
-      formData.tipoPersona === 'nuevo'
+      esRegistroSinCredenciales
         ? formData.fechaIngreso || new Date().toISOString().split('T')[0]
         : null,
     estado_consolidacion: formData.tipoPersona === 'nuevo' ? 'activo' : null,
@@ -76,51 +80,6 @@ export async function crearPersona(formData: {
 
   if (insertError) {
     return { error: `Error en la DB: ${insertError.message}` }
-  }
-
-  revalidatePath('/admin/personas')
-  return { success: true }
-}
-
-// Server Action para reasignar masivamente integrantes a un líder
-export async function reasignarLider({
-  liderId,
-  personasIds,
-}: {
-  liderId: string
-  personasIds: string[]
-}) {
-  const supabase = await createServerClient()
-
-  // 1. Validar autenticación y permisos
-  const {
-    data: { user: currentUser },
-  } = await supabase.auth.getUser()
-  if (!currentUser) return { error: 'No autenticado' }
-
-  const { data: currentPersona } = await supabase
-    .from('personas')
-    .select('rol_sistema')
-    .eq('auth_user_id', currentUser.id)
-    .single()
-
-  const rolesPermitidos = ['super_admin', 'pastor', 'encargado']
-  if (!currentPersona || !rolesPermitidos.includes(currentPersona.rol_sistema)) {
-    return { error: 'No tienes permisos para reasignar personas.' }
-  }
-
-  if (!liderId || !personasIds || personasIds.length === 0) {
-    return { error: 'Debes seleccionar un líder y al menos un integrante.' }
-  }
-
-  // 2. Actualizar en la base de datos
-  const { error } = await supabase
-    .from('personas')
-    .update({ lider_asignado_id: liderId })
-    .in('id', personasIds)
-
-  if (error) {
-    return { error: `Error en la DB al reasignar: ${error.message}` }
   }
 
   revalidatePath('/admin/personas')

@@ -27,12 +27,16 @@ export default async function AdminDashboardPage() {
   const { count: totalLideres } = await supabase
     .from('personas')
     .select('*', { count: 'exact', head: true })
-    .in('tipo_persona', ['lider', 'pastor'])
+    .in('tipo_persona', ['lider'])
 
   const { count: totalNuevos } = await supabase
     .from('personas')
     .select('*', { count: 'exact', head: true })
     .eq('tipo_persona', 'nuevo')
+
+  const { count: totalGrupos } = await supabase
+    .from('grupos_en_casa')
+    .select('*', { count: 'exact', head: true })
 
   return (
     <div className="min-h-screen bg-gray-50/50">
@@ -75,7 +79,7 @@ export default async function AdminDashboardPage() {
       <main className="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto space-y-6 sm:space-y-8">
         
         {/* Resumen de Cifras */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           
           <div className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all flex items-center justify-between">
             <div>
@@ -102,6 +106,20 @@ export default async function AdminDashboardPage() {
             </div>
             <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#0097A3]/10 text-[#0097A3] flex items-center justify-center text-xl sm:text-2xl shrink-0">
               🌱
+            </div>
+          </div>
+
+          <div className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all flex items-center justify-between sm:col-span-2 lg:col-span-1">
+            <div>
+              <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">
+                Grupos en Casa
+              </p>
+              <p className="text-3xl sm:text-4xl font-extrabold text-indigo-600 mt-1.5 sm:mt-2">
+                {totalGrupos || 0}
+              </p>
+            </div>
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl sm:text-2xl shrink-0">
+              🏡
             </div>
           </div>
 
@@ -154,6 +172,27 @@ export default async function AdminDashboardPage() {
               </div>
               <span className="text-xs text-[#0097A3] font-semibold mt-4 sm:mt-6 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
                 Ver lista de líderes &rarr;
+              </span>
+            </Link>
+
+            {/* Módulo: Reportes y Métricas */}
+            <Link
+              href="/admin/reportes"
+              className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all flex flex-col justify-between group"
+            >
+              <div>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold mb-3 sm:mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors duration-200 text-lg sm:text-xl">
+                  📊
+                </div>
+                <h3 className="font-bold text-gray-800 text-base mb-1.5 sm:mb-2 group-hover:text-purple-600 transition-colors">
+                  Reportes y Métricas
+                </h3>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  Generar estadísticas generales, tasa de avance de la consolidación y exportar resúmenes detallados.
+                </p>
+              </div>
+              <span className="text-xs text-purple-600 font-semibold mt-4 sm:mt-6 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                Ver reportes &rarr;
               </span>
             </Link>
 
